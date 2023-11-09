@@ -69,3 +69,17 @@ git clone -b v0_alps https://github.com/alpana-hep/hexagonal_histograms.git .
 cd hexagonal_histograms
 make && ./exe.py
 ```
+
+Example to run over particular relay-
+Change the relay number and other arguments upto your choice in exe.py file
+```
+https://github.com/alpana-hep/hexagonal_histograms/blob/v0_alps/exe.py#L292
+```
+Arguments to run 'th2poly.C'
+```
+exe("root -l -b -q th2poly.C'(\"./data/hexagons.root\","<runfile>","<calib files>","module png text","pdf name","range", bool drawLine=false, TString layer_="-1", TString runNumber="-1", "int ped_method=-1")'
+```
+Example to run 'th2poly.c'
+```
+exe("root -l -b -q th2poly.C'(\"./data/hexagons.root\", \"./run_1691487584_pedestal.txt\",\"./Calib_Files_Aug2023/level0_calib_params_run1691487584.txt\", \"Module_0_run_1691487584_noiserPerarea\", \"Module_0_run_1691487584_noiserPerarea.pdf\", 26, \"false\",\"0\",\"1691487584\",7)'")
+```
