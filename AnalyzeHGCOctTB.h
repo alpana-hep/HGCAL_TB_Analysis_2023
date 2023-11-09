@@ -1,0 +1,457 @@
+#ifndef AnalyzeHGCOctTB_H
+#define AnalyzeHGCOctTB_H
+#define RESET   "\033[0m"
+#define BLACK   "\033[30m"      /* Black */
+#define RED     "\033[31m"      /* Red */
+#define GREEN   "\033[32m"      /* Green */
+#define YELLOW  "\033[33m"      /* Yellow */
+#define BLUE    "\033[34m"      /* Blue */
+#define MAGENTA "\033[35m"      /* Magenta */
+#define CYAN    "\033[36m"      /* Cyan */
+#define WHITE   "\033[37m"      /* White */
+#define BOLDBLACK   "\033[1m\033[30m"      /* Bold Black */
+#define BOLDRED     "\033[1m\033[31m"      /* Bold Red */
+#define BOLDGREEN   "\033[1m\033[32m"      /* Bold Green */
+#define BOLDYELLOW  "\033[1m\033[33m"      /* Bold Yellow */
+#define BOLDBLUE    "\033[1m\033[34m"      /* Bold Blue */
+#define BOLDMAGENTA "\033[1m\033[35m"      /* Bold Magenta */
+#define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
+#define BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
+
+#include <iostream>
+#include <fstream>
+#include <cmath>
+#include <vector>
+#include "HGCNtupleVariables.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TH3F.h"
+#include "TGraph.h"
+#include "TF1.h"
+#include "TFile.h"
+#include "TProfile.h"
+#include "TLorentzVector.h"
+#include "TDirectory.h"
+using namespace std;
+class AnalyzeHGCOctTB : public HGCNtupleVariables{
+
+ public:
+  AnalyzeHGCOctTB(const TString &inputFileList="foo.txt", const char *outFileName="histo.root",const char *dataset="data", const char *runNumber="-1", const char* energy = "-1");//, const char* min_ = "-1", const char* max_ ="-1");
+  ~AnalyzeHGCOctTB();
+  //Bool_t   FillChain(TChain *chain, TChain *chain2, TChain *chain3, const TString &inputFileList);
+   Bool_t   FillChain(TChain *chain, const TString &inputFileList); 
+  Long64_t LoadTree(Long64_t entry);
+  void     EventLoop(const char *, const char *);//, const char *,const char *);
+  void     BookHistogram(const char *, const char * dataset, const char* energy, const char * runNumber);
+
+  /* void moduleMap_init(const char *); */
+  /* void Alignment_Map_Init(); */
+  void Noise_Map_Init();
+  /* void layerPosition_init(); */
+  /* void Chi2_Weight_Map_Init(int chi2_method); // intialize the weights at different pion energies */
+  
+  /* std::vector<bool> *noise_flag; */
+  TFile *oFile;
+  const char *conf_;  
+  int inEnergy_;
+  int event_count[7]={};
+  int count=0, count_afterCuts =0;//,count_nflag=0,count_nchannel=0,count_nchanLayer1=0, count_nflag0=0;
+  float  totalEnergy_inGeV=0;
+  float  EnergySum_SSinEE=0;
+  float  EnergySum_SSinFH=0;
+  float Esum_rechits_FH=0;
+  float Esum_rechits_EE=0;
+  float Esum_rechits_AH=0;
+  float Esum_rechits_FH_inGeV=0;
+  float Esum_rechits_EE_inGeV=0;
+  float Esum_rechits_AH_inGeV=0;
+  int total_rechits=0, rechits_EE=0, rechits_FH=0, rechits_AH=0;
+  
+  int count_FH=0,count_fh=0, count_badtrack=0;//,count_adiMask=0;
+  int count_FH_afterCuts=0;
+  TH1F* h_HGC_energy;
+  TH1F* h_HGC_id_eleID_lt0_hgcEnergy;
+  TH1F* h_HGC_digi_adc;
+  TH1F* h_HGC_digi_adcm1;
+  /* TH1F* h_beamenergy; */
+  /* TH1F* h_particle; */
+
+  //  TH1F* h_true_beamenergy[6];
+  TH1F* h_HGC_channelType[2][6][40];
+
+  TH1F* h_HGC_digi_adc_perChannel[2][6][40];
+
+};
+#endif
+
+#ifdef AnalyzeHGCOctTB_cxx
+
+void AnalyzeHGCOctTB::BookHistogram(const char *outFileName, const char *dataset, const char* energy, const char *runNumber ) {
+
+  //conf_ = conf;
+  char file_name[100];
+  int run_number = atoi(runNumber);
+
+  sprintf(file_name,"%s_%s_%d.root",outFileName,dataset,run_number);
+  oFile = new TFile(file_name, "recreate");
+
+  int en = atoi(energy);
+  //  int run_number = atoi(runNumber);
+  float xlow = 0.0;
+  float xhigh = en*100*1.5;
+  //int xbin = (xhigh-xlow)/6;
+  int xbin = 200;//*0.5*en;
+  ////////// Book histograms here  //////////////
+   const char *baseline[6]= {"Nocut","FH-noisy","Good-track","MuonVeto","pres-shower","track-impact"};//,"dPhi_Met","Met_100","Met_250","Met_600","st_300_Met100","pt_st_Met_250","st_300_Met250","nocut"};
+  char name[100],title[100];
+  char hname[1000],hname1[1000], hname1_2d[1000];
+  h_HGC_energy = new TH1F("h_HGC_energy","Run-1691491176:Pedastel-HGC_energy",100,0,100);
+  h_HGC_id_eleID_lt0_hgcEnergy = new TH1F("h_HGC_id_eleID_lt0_hgcEnergy","Run-1691491176: eleID-channels with negative/nan values",500,0,500);
+  h_HGC_digi_adc = new TH1F("h_HGC_digi_adc","ADC counts in all channels",200,0,200);
+  h_HGC_digi_adcm1 = new TH1F("h_HGC_digi_adcm1","ADC(m-1) counts in all channels",200,0,200);
+  for(int k =0;k<2;k++){
+  for(int i=0;i<6;i++)
+    {
+      for(int j =0;j<40;j++)
+	{
+	  sprintf(hname,"h_HGC_digi_adc_chip_%d_channel_%d_Module_%d",i,j,k);
+	  cout<<"hname "<<hname<<endl;
+	  sprintf(hname1,"Runtype - %s, Run number- %d , Module- %2d, chip- %2d : channel- %2d : ADC counts",dataset,run_number,k,i,j);
+	  h_HGC_digi_adc_perChannel[k][i][j]=new TH1F(hname,hname1,700,0,700);
+	  sprintf(hname,"h_HGC_channelType_%d_%2d_%d",i,j,k);
+	  h_HGC_channelType[k][i][j]= new TH1F(hname,hname1,110,-10,100);
+	  h_HGC_digi_adc_perChannel[k][i][j]->Sumw2();
+
+	}
+    }
+  }
+}
+   
+
+
+
+/* void AnalyzeHGCOctTB::Alignment_Map_Init() { */
+/*   /// Alignment map for config 1, it needs to be changed accorfing to configurations */
+  
+/*   char* f_name = new char[200]; */
+/*   sprintf(f_name,"./config_maps/Alignment_Map.txt"); */
+/*   std::ifstream in(f_name); */
+/*   //int layer; */
+/*   if(!in) { */
+/*     cout<<"ERROR => "<<f_name<<" Not found"<<endl; */
+/*     //return; */
+/*     exit(0); */
+/*   } */
+
+/*   std::pair<float,float> dx_dy; */
+/*   std::pair<int, std::pair<float,float> > temp; */
+/*   int layer; */
+/*   float dx,dy; */
+/*   while(in>>layer>>dx>>dy) { */
+/*     //run_layer = std::make_pair(run,layer); */
+/*     dx_dy = std::make_pair(dx,dy); */
+/*     temp = std::make_pair(layer,dx_dy); */
+/*     align_map.insert(temp); */
+/*   } */
+
+/*   std::cout<<"INFO: Alignment MAP initialized successfully!!!"<<endl; */
+/* } */
+
+void AnalyzeHGCOctTB::Noise_Map_Init() {
+  //Noise map for config - 1 , needs to be changed accordingly  
+  char* f_name = new char[200];
+  sprintf(f_name,"./noiseMap.txt");
+  std::ifstream in(f_name);
+  
+  if(!in) {
+    cout<<"ERROR => "<<f_name<<" Not found"<<endl;
+    exit(0);
+  }
+  std::pair<int,int> chip_chan;
+  std::pair<int, std::pair<int,int>> layer_chip_chan;
+  std::pair<float, float> pedestal_noise;
+  std::pair<std::pair<int,std::pair<int,int>>, std::pair<float, float>> temp;
+  int layer_,chip_,halfchip,halfch,channel_,channel_map,channeltype,en_chan,entry;
+  float adc,adc_err,adc_sigma,err_sigma,chi2,grass, grass_err, mpv;
+  //  int layer,mod_id,mod_pos,chip;
+  float noise;
+  while(in>>layer_>>chip_>>halfchip>>halfch>>channel_>>channel_map>>channeltype>>en_chan>>adc>>adc_sigma>>adc_err>>err_sigma) {
+
+    chip_chan = std::make_pair((chip_*2+halfchip),halfch);
+    cout<<chip_<<"\t"<<halfchip<<"\t"<<chip_*2+halfchip<<"\t"<<channel_<<endl;
+    layer_chip_chan = std::make_pair(layer_,chip_chan);
+    pedestal_noise = std::make_pair(adc,adc_sigma);
+    temp = std::make_pair(layer_chip_chan,pedestal_noise);
+    noise_map.insert(temp);
+  }
+
+  std::cout<<"INFO: Noise MAP initialized successfully!!!"<<endl;
+}
+
+/* void AnalyzeHGCOctTB::moduleMap_init(const char* config) { */
+/*   char *f_name = new char[200]; */
+
+/*   if(strcmp(config,"alpha")==0 || strcmp(config,"config1")==0) { */
+/*     sprintf(f_name,"./config_maps/moduleMAP_config1.txt"); */
+/*     cout<<"\n\nINFO: Mapping module configuration ALPHA (oct10-oct17) "<<endl; */
+/*     cout<<"INFO: Mapping EE[0]/FH[1]::Layer #[1-40]::Position on Layer[0 for EE]&[1-7 for FH] consult figure for Daisy structure configuration!!!"<<endl; */
+
+/*   } */
+/*   else if(strcmp(config,"bravo")==0 || strcmp(config,"config2")==0) { */
+/*     sprintf(f_name,"./config_maps/moduleMAP_config2.txt"); */
+/*     cout<<"\n\nINFO: Mapping module configuration BRAVO (17oct-22oct) "<<endl; */
+/*     cout<<"INFO: Mapping EE[0]/FH[1]::Layer #[1-40]::Position on Layer[0 for EE]&[1-7 for FH] consult figure for Daisy structure configuration!!!"<<endl; */
+
+/*   } */
+/*   else if(strcmp(config,"charlie")==0  || strcmp(config,"config3")==0) { */
+/*     sprintf(f_name,"./config_maps/moduleMAP_config3.txt"); */
+/*     cout<<"\n\nINFO: Mapping module configuration CHARLIE (23Oct-4Nov) "<<endl; */
+/*     cout<<"INFO: Mapping EE[0]/FH[1]::Layer #[1-40]::Position on Layer[0 for EE]&[1-7 for FH] consult figure for Daisy structure configuration!!!"<<endl; */
+
+/*   } */
+/*   else { */
+/*     cout<<"\n\nERROR: Incorrect configuration entered "<<endl; */
+/*     cout<<" Allowed configuration :\n alpha = Configuration 1 (10Oct-17Nov) \n bravo = Configuration 2 (17Oct-22Oct) \n charlie = Configuration 3 (23Oct-17Nov)"<<endl; */
+/*     return; */
+    
+/*   } */
+
+/*   std::ifstream in(f_name); */
+/*   if(!in) { */
+/*     cout<<"ERROR => "<<f_name<<" Not found"<<endl; */
+/*     //return; */
+/*     exit(0); */
+/*   } */
+
+
+/*   int modID_, part_, layer_, pos_; */
+/*   cout<<"File name = "<<f_name<<endl; */
+/*   while(in>>modID_>>part_>>layer_>>pos_){ */
+/*     std::pair<int, std::vector<int>> temp_pair; */
+/*     std::vector<int> temp_vector; */
+/*     temp_vector.push_back(part_); */
+/*     temp_vector.push_back(layer_); */
+/*     temp_vector.push_back(pos_); */
+/*     temp_pair = std::make_pair(modID_,temp_vector); */
+/*     module_map.insert(temp_pair); */
+/*   } */
+
+/*   cout<<"INFO: Module Mapping Done!!! "<<endl<<endl; */
+
+
+/* } */
+
+
+/* void AnalyzeHGCOctTB::layerPosition_init() { */
+/*   // Layer postions for config - 1, needs to be changed accordingly for other configs */
+  
+/*   char *f_name = new char[200]; */
+/*   sprintf(f_name,"./config_maps/config1_lengths.txt"); */
+
+/*   std::ifstream in(f_name); */
+/*   if(!in) { */
+/*     cout<<"ERROR => "<<f_name<<" Not found"<<endl; */
+/*     exit(0); */
+/*   } */
+/*   int layer_; */
+/*   float  cm_, x0, nuc_int_, pi_int_; */
+
+/*   cout<<"File name = "<<f_name<<endl; */
+/*   while(in>>layer_>>cm_>>x0>>nuc_int_>>pi_int_){ */
+/*     std::pair<int, std::vector<float>> temp_pair; */
+/*     std::vector<float> temp_vector; */
+/*     temp_vector.push_back(cm_/10.0); */
+/*     temp_vector.push_back(x0); */
+/*     temp_vector.push_back(nuc_int_); */
+/*     temp_vector.push_back(pi_int_); */
+
+/*     temp_pair = std::make_pair(layer_,temp_vector); */
+/*     layer_positions.insert(temp_pair); */
+/*   } */
+
+/*   cout<<"INFO: Layer Position Mapping Done!!! "<<endl<<endl; */
+
+
+/* } */
+
+
+AnalyzeHGCOctTB::AnalyzeHGCOctTB(const TString &inputFileList, const char *outFileName, const char* dataset, const char* runNumber, const char* energy) {//,const char* min_, const char* max_) {
+
+  TChain *tree = new TChain("Events");
+  // TChain *tree2 = new TChain("trackimpactntupler/impactPoints");
+  // TChain *tree3 = new TChain("bigtree");
+
+
+  if( ! FillChain(tree, inputFileList) ) {
+    std::cerr << "Cannot get the tree " << std::endl;
+  } else {
+    std::cout << "Initiating analysis of dataset " << dataset << std::endl;
+  }
+
+  int chi2_method= atoi(energy);
+  HGCNtupleVariables::Init(tree);//, tree2, tree3);
+  //  HGCNtupleVariables::init_piTree();
+  BookHistogram(outFileName, dataset, energy, runNumber);
+  Noise_Map_Init();
+
+}
+/* void AnalyzeHGCOctTB::Chi2_Weight_Map_Init(int chi2_method) { */
+/*   char *f_name_EH = new char[2000]; */
+/*   char *f_name_H = new char[2000]; */
+/*   char *method = new char[2000]; */
+/*   bool UseSimWeights = false; */
+
+/*   switch(chi2_method) { */
+/*   case 0 : sprintf(method,"%d : rechit energy sum as input to chi2",chi2_method);  break; */
+/*   case 1 : sprintf(method,"%d : detector scale with No offset for H hadrons as input to chi2",chi2_method);  break; */
+/*   case 2 : sprintf(method,"%d : detector scale with offset (0.4 GeV) for H hadrons as input to chi2",chi2_method);  break; */
+/*   case 3 : sprintf(method,"%d : detector scale with offset (0.4 GeV) for H hadrons AND events around the core of beam energy as input to chi2",chi2_method);  break; */
+/*   default : cout<<"Incorrect method input use between 0-3"<<endl; exit(0); */
+/* } */
+/*   sprintf(f_name_EH,"./txt_maps/chi2_flatEn/sim/chi2_calibFact_EH_hadrons_flatEn_%d_scalMC_2sigma.txt",chi2_method); */
+/*   sprintf(f_name_H,"./txt_maps/chi2_flatEn/sim/chi2_calibFact_EH_hadrons_flatEn_%d_scalMC_2sigma.txt",chi2_method); */
+
+
+
+/*   std::ifstream in_EH(f_name_EH); */
+/*   std::ifstream in_H(f_name_H); */
+/*   if(!in_EH) { */
+/*     cout<<"ERROR => "<<f_name_EH<<" Not found"<<endl; */
+/*     //return;                                                                                                                                 */
+/*     exit(0); */
+/*   } */
+/*   if(!in_H) { */
+/*     cout<<"ERROR => "<<f_name_H<<" Not found"<<endl; */
+/*     //return;                                                                                                                                 */
+/*     exit(0); */
+/*   } */
+/* int beamEnergy; */
+/*   float  w1, w2, w3; */
+
+/*   cout<<"File name = "<<f_name_EH<<endl; */
+/*   while(in_EH>>beamEnergy>>w1>>w2>>w3){ */
+/*     std::pair<int, std::vector<float>> temp_pair; */
+/*     std::vector<float> temp_vector; */
+/*     temp_vector.push_back(w1); */
+/*     temp_vector.push_back(w2); */
+/*     temp_vector.push_back(w3); */
+
+
+/*     temp_pair = std::make_pair(beamEnergy,temp_vector); */
+/*     chi2_weights_EH.insert(temp_pair); */
+/*   } */
+/*   cout<<BOLDGREEN<<"INFO: Chi2 calibration Map initialized for EH hadrons!! "<<RESET<<endl; */
+/* beamEnergy = -1.0; w1 = -1.0; w2 = -1.0; w3 = -1.0; */
+
+
+/*   cout<<"File name = "<<f_name_H<<endl; */
+/*   while(in_H>>beamEnergy>>w1>>w2>>w3){ */
+/*     std::pair<int, std::vector<float>> temp_pair; */
+/*     std::vector<float> temp_vector; */
+/*     temp_vector.push_back(w1); */
+/*     temp_vector.push_back(w2); */
+/*     temp_vector.push_back(w3); */
+
+
+/*     temp_pair = std::make_pair(beamEnergy,temp_vector); */
+/*     chi2_weights_H.insert(temp_pair); */
+/*   } */
+/*    cout<<BOLDGREEN<<"INFO: Chi2 calibration Map initialized for H hadrons!! "<<RESET<<endl<<endl; */
+
+/*   cout<<BOLDGREEN<<"INFO: Chi2 minimization method used =>  "<<method<<RESET<<endl<<endl; */
+
+
+/* } */
+
+
+Bool_t AnalyzeHGCOctTB::FillChain(TChain *chain,  const TString &inputFileList) {//TChain *chain2, TChain *chain3, const TString &inputFileList) {
+
+  ifstream infile(inputFileList, ifstream::in);
+  std::string buffer;
+
+  if(!infile.is_open()) {
+    std::cerr << "** ERROR: Can't open '" << inputFileList << "' for input" << std::endl;
+    return kFALSE;
+  }
+
+  std::cout << "TreeUtilities : FillChain " << std::endl;
+  while(1) {
+    infile >> buffer;
+    if(!infile.good()) break;
+    //std::cout << "Adding tree from " << buffer.c_str() << std::endl;                                                              
+    chain->Add(buffer.c_str());
+    // chain2->Add(buffer.c_str());
+    // chain3->Add(buffer.c_str());
+
+  }
+  std::cout << "No. of Entries in chain  : " << chain->GetEntries() << std::endl;
+  // std::cout << "No. of Entries in chain2 : " << chain2->GetEntries() << std::endl;
+  // std::cout << "No. of Entries in chain3 : " << chain3->GetEntries() << std::endl;
+
+  return kTRUE;
+}
+
+Long64_t AnalyzeHGCOctTB::LoadTree(Long64_t entry) {
+  // Set the environment to read one entry                                                                                          
+  if (!fChain) return -5;
+  Long64_t centry = fChain->LoadTree(entry);
+  if (centry < 0) return centry;
+  if (!fChain->InheritsFrom(TChain::Class()))  return centry;
+  TChain *chain = (TChain*)fChain;
+  if (chain->GetTreeNumber() != fCurrent) {
+    fCurrent = chain->GetTreeNumber();
+    //    Notify();
+  }
+
+  // if (!fChain2) return -5;
+  // Long64_t centry2 = fChain2->LoadTree(entry);
+  // if (centry2 < 0) return centry2;
+  // if (!fChain2->InheritsFrom(TChain::Class()))  return centry2;
+  // TChain *chain2 = (TChain*)fChain2;
+  // if (chain2->GetTreeNumber() != fCurrent) {
+  //   fCurrent = chain->GetTreeNumber();
+  //   //    Notify();
+  // }
+
+  // if (!fChain3) return -5;
+  // Long64_t centry3 = fChain3->LoadTree(entry);
+  // if (centry3 < 0) return centry3;
+  // if (!fChain3->InheritsFrom(TChain::Class()))  return centry3;
+  // TChain *chain3 = (TChain*)fChain3;
+  // if (chain3->GetTreeNumber() != fCurrent) {
+  //   fCurrent = chain->GetTreeNumber();
+  //   //    Notify();
+  // }
+  
+  //if (centry==centry2)
+  return centry;
+  // cout<<"centry = "<<centry<<endl;
+  // if(centry>0)
+  //   return centry;
+  // else return -1;
+}
+
+AnalyzeHGCOctTB::~AnalyzeHGCOctTB() { 
+
+  // if (!fChain || !fChain2) return;
+  // delete fChain->GetCurrentFile();
+  // delete fChain2->GetCurrentFile();
+  // oFile->cd();
+  // oFile->Write();
+  // oFile->Close();
+
+
+  if (!fChain) return;
+  delete fChain->GetCurrentFile();
+  oFile->cd();
+  oFile->Write();
+  oFile->Close();
+
+}
+
+#endif
+
+/*  LocalWords:  Nrechit EE R1 FH GetXaxis SetTitle Sumw2 TH2F reg3 NRechits
+ */
+/*  LocalWords:  GetYaxis SetTitleOffset
+ */

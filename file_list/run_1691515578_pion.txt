@@ -1,0 +1,16 @@
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691515578_Run1691515578_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691515622_Run1691515622_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691515666_Run1691515666_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691515710_Run1691515710_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691515754_Run1691515754_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691515798_Run1691515798_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691515842_Run1691515842_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691515886_Run1691515886_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691515930_Run1691515930_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691515974_Run1691515974_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691516018_Run1691516018_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691516062_Run1691516062_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691516106_Run1691516106_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691516106_Run1691516106_Link2_File0000000001_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691516150_Run1691516150_Link2_File0000000000_NANO.root
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691515578/2969b01e-3c31-11ee-8442-b8ca3af74182//Run1691516194_Run1691516194_Link2_File0000000000_NANO.root

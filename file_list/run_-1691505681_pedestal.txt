@@ -1,0 +1,1 @@
+/eos/cms/store/group/dpg_hgcal/tb_hgcal/2023/CMSSW/ReReco_Aug16/Run_-1691505681/2771edee-3c31-11ee-a559-b8ca3af74182/Run1691505681_Run1691505681_Link2_File0000000000_NANO.root
