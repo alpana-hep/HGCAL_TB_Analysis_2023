@@ -1,7 +1,11 @@
 # HGCAL_TB_Analysis_2023
 
 ##Reco data analysis framework
-
+### setup the mahcinery-
+```
+git clone -b AnalysisScripts https://github.com/alpana-hep/HGCAL_TB_Analysis_2023.git .
+make
+```
 Scripts-
 ```
 AnalyzeHGCOctTB.cc - source file, loop over events and fill hitograms
